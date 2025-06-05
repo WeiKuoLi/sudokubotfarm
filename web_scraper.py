@@ -23,8 +23,10 @@ def extract_screenshot():
     driver.quit()
     return filepath
 
+## Corrected crop_box coordinates to isolate puzzle -NTB
 def crop_image(filepath):
-    crop_box = (46, 189, 661,804)
+    crop_box = (10, 120, 430, 530)       #(x top left, y top left, x bottom right, y bottom right)
+    ## crop_box = (46, 189, 661,804)
     new_size = (262,262)
     try:
         img = Image.open(filepath)
