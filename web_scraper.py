@@ -32,7 +32,7 @@ def extract_screenshot(web_url:str)->str:
         web_url (str): the URL of the website to be screenshotted.
         
     Returns:
-        filepath (str): the path to the screenshot
+        str: the path to the screenshot
     '''
 
     # construct save location (in this directory)
@@ -57,25 +57,52 @@ def extract_screenshot(web_url:str)->str:
     driver.quit()
     return filepath
 
-def crop_image(filepath):
+def crop_and_downsample_image(filepath):
+    '''
+    Opens the image at filepath, crops it to shape, and downsamples it to easily export for image inference.
+
+    Args:
+        filepath (str): the path of the image to crop and downsample.
+
+    Returns:
+        str: the path of the cropped and downsampled image. If the original image could not be opened, return the empty string
+    '''
     # Set up cropping parameters
-    crop_box = (100, 126, 525, 551) # left, top, right, bottom
-    new_size = (262,262) # downsample size. 262x262 corresponds to 9- 28x28 cells + 10- 1px borders (doesn't quite match, but close enough)
+    crop_box = (100, 126, 526, 552) # left, top, right, bottom
+    new_size = (262,262) # downsample size. 262x262 corresponds to 9- 28x28 cells + 10- 1px borders (doesn't quite match with the rasterizing, but close enough)
 
     # Wrap in try/except to make sure we get `something`
     try:
         img = Image.open(filepath)
     except:
         print(f'Could not open file {filepath}')
-        return False
+        return ''
 
+    # Crop, downsample image
     cropped = img.crop(crop_box)
     downsampled = cropped.resize(new_size, resample=Image.LANCZOS)
+
+    # clean up opened files
     img.close()
     cropped.close()
+
+    # save to filepath and return
     downsampled.save(filepath)
     return filepath
 
+def submit_image_for_inference(filepath):
+    '''
+    Submit the image to the appropriate webserver for inference
+
+    Args:
+        filepath (str): the path of the image to submit for inference
+
+    Returns:
+        List[List[int]]: the two-dimensional array of integers representing the starting board
+    '''
+    raise NotImplementedError('Image submission cannot be implemented until the server is known.')
+
 if __name__ == '__main__':
-    file = extract_screenshot('https://www.sudoku.com/expert/')
-    updated_file = crop_image(file)
+    file = extract_screenshot('https://sudoku.com/expert/')
+    updated_file = crop_and_downsample_image(file)
+    #response = submit_image_for_inference(updated_file)
