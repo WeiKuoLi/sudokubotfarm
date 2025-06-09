@@ -1,8 +1,11 @@
 ## Code to import scraped sudoku png file;
 # splice into 9 individual boxes; 
+
 # create 3x3x9 tensor of integers; 
+
 # build model to fill integers and correctly solve puzzle 
 from PIL import Image
+
 
 
 imgfile = Image.open("tmp_image.png")
@@ -15,11 +18,13 @@ def nine_split(imgfile):
     crop_vec = []                                #preallocates new list for cropped images
     tl_x = 7
     tl_y = 0       # setting approximate pixel divisons/locations for crop function
+
     br_x = 92
     br_y = 87
     x_space = 85
     y_space = 87
     
+
 
     for i, seg in enumerate(box_vec):
       cropseg = seg.crop((tl_x,tl_y,br_x,br_y))  #crops current copy of each image and appends to new list
@@ -28,10 +33,12 @@ def nine_split(imgfile):
       br_x += x_space  
       if i==2 or i==5:
          tl_x = 7           #changing deliminters to iterate through whole sudoku image
+
          br_x = 92
          tl_y += y_space
          br_y += y_space
       
+
 
     return crop_vec
 
