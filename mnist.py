@@ -3,12 +3,13 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, random_split
+from tqdm import tqdm
 import os
 
 # Configuration
-BATCH_SIZE = 64
-EPOCHS = 25
-MODEL_PATH = "mnist.pth"
+BATCH_SIZE =64
+EPOCHS = 5
+MODEL_PATH = "mnistnn.pth"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Transform
@@ -37,24 +38,25 @@ test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 class MNISTNN(nn.Module):
     def __init__(self):
         super(MNISTNN, self).__init__()
-        self.fc1 = nn.Linear(28 * 28, 128)
-        self.fc2 = nn.Linear(128, 10)
+        self.fc1 = nn.Linear(28 * 28, 256)
+        self.fc2 = nn.Linear(256, 10)
 
     def forward(self, x):
         x = x.view(x.size(0), -1)
         x = nn.functional.relu(self.fc1(x))
-        x = nn.functional.relu(self.fc2(x))
-        return nn.functional.log_softmax(x, dim=1)
+        x =(self.fc2(x))
+        return x
 
 model = MNISTNN().to(DEVICE)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.0006)
 criterion = nn.CrossEntropyLoss()
 
 # Training
-for epoch in range(EPOCHS):
+for epoch in tqdm(range(EPOCHS)):
     model.train()
     total_loss = 0
-    for data, target in train_loader:
+    num_train = 0
+    for _, (data, target) in enumerate(train_loader):
         data, target = data.to(DEVICE), target.to(DEVICE)
         optimizer.zero_grad()
         output = model(data)
@@ -62,20 +64,23 @@ for epoch in range(EPOCHS):
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-    print(f"Epoch {epoch+1}/{EPOCHS}, Loss: {total_loss/len(train_loader):.4f}")
+        num_train += target.size(0)
+        #if _==1:
+        #    break
+    print(f"Epoch {epoch+1}/{EPOCHS}, Loss: {total_loss/num_train:.4f}")
 
     # Validation
     model.eval()
-    correct = 0
+    correct, num_val = 0, 0
     with torch.no_grad():
         for data, target in val_loader:
             data, target = data.to(DEVICE), target.to(DEVICE)
             output = model(data)
-            pred = output.argmax(dim=1, keepdim=True)
-            correct = 0
+            pred = output.argmax(dim=1, keepdim=False)
             for i in range(pred.size(0)):
-                correct += (pred[i] == target[i])
-    print(f"Validation Accuracy: {100. * correct / len(val_loader.dataset):.2f}%")
+                correct += (pred[i] == target[i]).item()
+                num_val += 1
+    print(f"Validation Accuracy: {100. * correct / num_val:.2f}%")
 
 # Save model
 torch.save(model.state_dict(), MODEL_PATH)
