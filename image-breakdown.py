@@ -2,10 +2,12 @@
 # splice into 9 individual boxes; 
 # create 3x3x9 tensor of integers; 
 # build model to fill integers and correctly solve puzzle 
+
 from PIL import Image
 import cv2
 import pytesseract
 import numpy as np
+import random
 
 
 imgfile = Image.open("tmp_image.png")
@@ -16,11 +18,11 @@ def nine_split(imgfile):
     
     box_vec = [imgfile.copy() for _ in range(9)] #creates a list of 9 copies of the image
     crop_vec = []                                #preallocates new list for cropped images
-    tl_x = 0            #need to change depending on version of image (main or my branch)
+    tl_x = 7            #need to change depending on version of image (main or my branch)
     tl_y = 0       # setting approximate pixel divisons/locations for crop function
-    br_x = 87
+    br_x = 92
     br_y = 87
-    x_space = 87
+    x_space = 85
     y_space = 87
     
 
@@ -30,8 +32,8 @@ def nine_split(imgfile):
       tl_x += x_space   
       br_x += x_space  
       if i==2 or i==5:
-         tl_x = 0           #changing deliminters to iterate through whole sudoku image
-         br_x = 87
+         tl_x = 7           #changing deliminters to iterate through whole sudoku image
+         br_x = 92          #resetting based on these delimieters
          tl_y += y_space
          br_y += y_space
       
@@ -41,7 +43,7 @@ def nine_split(imgfile):
 
 def digit_read(crop_vec):
    #Iterating through list of images and creating tensor of digits 
-   unslvd_boxes = [[[0 for _ in range(9)] for _ in range(3)] for _ in range(3)]
+   unslvd_boxes = np.zeros((3,3,9), dtype=int)
 
    subreg_size = 29
    
@@ -65,8 +67,8 @@ def digit_read(crop_vec):
                 # Crop 29x29 sub-region
                 x1 = b * subreg_size  # 0, 29, 58
                 y1 = a * subreg_size  # 0, 29, 58
-                x2 = x1 + subreg_size  # 29, 58, 87
-                y2 = y1 + subreg_size  # 29, 58, 87
+                x2 = x1 + subreg_size  
+                y2 = y1 + subreg_size  
                 sub_region = thresh[y1:y2, x1:x2]
                 
                 
@@ -77,29 +79,70 @@ def digit_read(crop_vec):
                 if text.isdigit():
                     #print(int(text))
                     unslvd_boxes[a][b][i] = int(text)
+    
+    
                 
 
    return  unslvd_boxes
     
     
 def puzzle_reconstruct(unslvd_boxes):
-    reconpuz = np.zeros((9,9), dtype=int)
+    reconpuz = np.zeros((9,9), dtype=int)       #conversion to numpy array
     np_unslvd = np.array(unslvd_boxes)
     for x in range((np_unslvd.shape[2])):
         for y in range((np_unslvd.shape[1])):
             for z in range((np_unslvd.shape[0])):
-                #print(f"{x},{y},{z}")
+                
                 if x <= 2:
-                    reconpuz[y][z+(x*3)] = np_unslvd[y][z][x]
-                elif x > 2 and x <= 5:
+                    reconpuz[y][z+(x*3)] = np_unslvd[y][z][x]       #scrappy code but pieces back together the tensor into 
+                elif x > 2 and x <= 5:                              #full empty puzzle
                     reconpuz[y+3][z+(x*3-9)] = np_unslvd[y][z][x]
                 elif x > 5:
                     reconpuz[y+6][z+(x*3-18)] = np_unslvd[y][z][x]
 
     return reconpuz
 
+def validity_test(puzz, row, col, num):
+    #check if the number repeats in the row
+    if num in puzz[row,:]:
+        return False
+    
+    #Check if number repeats in column
+    if num in puzz[:,col]:
+        return False
+    
+    #check if number repeats in 3x3 box
+    start_row, start_col = 3*(row//3), 3*(col//3)
+    if num in puzz[start_row:start_row+3, start_col:start_col+3]:
+        return False
+
+    #Passes all tests 
+    return True
+
+def solution_seek(puzz):
+    #start with empty cell 
+    for row in range(puzz.shape[1]):
+        for col in range(puzz.shape[1]):
+            if puzz[row,col] ==0:
+                #Try numbers 1-9
+                for num in range(1,10):
+                    if validity_test(puzz,row,col,num):
+                        puzz[row,col] = num #Places number
+                        if solution_seek(puzz):     #Uses recursion
+                            return True
+                        puzz[row,col] = 0   #if test didnt work set value back to zero and start over    
+                return False
+    return True #puzzle solved 
+
 
 crop_vec = nine_split(imgfile)
-unslvd_boxes = digit_read(crop_vec)     #currently misses 5 numbers... will work on and maybe model can fill them in
+unslvd_boxes = digit_read(crop_vec)     
 reconpuz = puzzle_reconstruct(unslvd_boxes)
+
+puzzsolve = reconpuz.copy()     #copy so as to not change any aspects of the original 
+
+if solution_seek(puzzsolve):
+    print("Solution: \n", puzzsolve)
+else:
+    print("Unsolvable")
 
