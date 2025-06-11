@@ -135,14 +135,16 @@ def solution_seek(puzz):
     return True #puzzle solved 
 
 
-crop_vec = nine_split(imgfile)
-unslvd_boxes = digit_read(crop_vec)     
-reconpuz = puzzle_reconstruct(unslvd_boxes)
+if __name__ == "__main__":
+    crop_vec = nine_split(imgfile)
+    unslvd_boxes = digit_read(crop_vec)     
+    print(unslvd_boxes)
+    reconpuz = puzzle_reconstruct(unslvd_boxes)
 
-puzzsolve = reconpuz.copy()     #copy so as to not change any aspects of the original 
+    puzzsolve = reconpuz.copy()     #copy so as to not change any aspects of the original 
 
-if solution_seek(puzzsolve):
-    print("Solution: \n", puzzsolve)
-else:
-    print("Unsolvable")
+    if solution_seek(puzzsolve):
+        print("Solution: \n", puzzsolve)
+    else:
+        print("Unsolvable")
 

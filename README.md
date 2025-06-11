@@ -1,8 +1,12 @@
 # sudokubotfarm
 
+## How to build
+sudo apt-get install tesseract-ocr
+pip install -r requirements.txt
 
-## Zach Pull Request
+## How to run
+* to scrape sudoku image
+python web_scraper.py
 
-## Honghui Pull Request
-
-## Nathan Pull request
+* to extract sudoku from scraped image
+python image_break_down.py 

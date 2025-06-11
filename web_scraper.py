@@ -41,8 +41,11 @@ def extract_screenshot(web_url:str)->str:
     # Set up selenium browser
     options = Options()
     options.headless = True
+    options.add_argument("--headless=new")  # more reliable in newer Chrome versions
+    options.add_argument("--disable-gpu")   # optional but common
+    options.add_argument("--window-size=1280,820")
     driver = webdriver.Chrome(options=options)
-    driver.set_window_size(1280, 820)
+    #driver.set_window_size(1280, 820)
     driver.get(web_url)
 
     # Sudoku.com has an annoying "hint" at the start. Use the mouse to bypass that.
@@ -106,3 +109,4 @@ if __name__ == '__main__':
     file = extract_screenshot('https://sudoku.com/expert/')
     updated_file = crop_and_downsample_image(file)
     #response = submit_image_for_inference(updated_file)
+
