@@ -3,6 +3,7 @@
 ################################################################################
 
 /.vs
-/env
-/page_content.txt 
+/env 
+/page_content.txt
+data/
 tmp_image.png

@@ -17,3 +17,6 @@ urllib3==2.4.0
 websocket-client==1.8.0
 wsproto==1.2.0
 pytesseract==0.3.10
+torch==2.7.1 
+torchvision==0.22.1
+requests
