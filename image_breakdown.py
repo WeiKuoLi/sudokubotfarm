@@ -134,17 +134,33 @@ def solution_seek(puzz):
                 return False
     return True #puzzle solved 
 
-
-if __name__ == "__main__":
+def extract_puzzle(imgfile):
     crop_vec = nine_split(imgfile)
     unslvd_boxes = digit_read(crop_vec)     
-    print(unslvd_boxes)
     reconpuz = puzzle_reconstruct(unslvd_boxes)
+    return reconpuz.tolist()
 
-    puzzsolve = reconpuz.copy()     #copy so as to not change any aspects of the original 
-
+def solve_puzzle(puzzle):
+    puzzsolve = np.array(puzzle.copy(), dtype=int)     #copy so as to not change any aspects of the original
     if solution_seek(puzzsolve):
-        print("Solution: \n", puzzsolve)
+        return puzzsolve.tolist()
+    else:
+        return None
+
+def print_puzzle(puzzle):
+    for row in puzzle:
+        _vis = [i if i != 0 else "." for i in row]
+        print(*_vis)
+
+if __name__ == "__main__":
+    puzzle = extract_puzzle(imgfile)
+    print("Problem: \n")
+    print_puzzle(puzzle)
+
+    answer = solve_puzzle(puzzle)
+    if answer is not None:
+        print("Solution: \n")
+        print_puzzle(answer)
     else:
         print("Unsolvable")
 

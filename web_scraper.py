@@ -5,6 +5,7 @@ from PIL import Image
 from os import remove
 from os.path import join, dirname
 import time
+from image_breakdown import extract_puzzle, solve_puzzle, print_puzzle
 
 def clean_up_images(filepath:str)->bool:
     '''
@@ -71,7 +72,8 @@ def crop_and_downsample_image(filepath):
         str: the path of the cropped and downsampled image. If the original image could not be opened, return the empty string
     '''
     # Set up cropping parameters
-    crop_box = (100, 126, 526, 552) # left, top, right, bottom
+    #crop_box = (100, 126, 526, 552) # left, top, right, bottom
+    crop_box = (108, 126, 534, 552) # left, top, right, bottom
     new_size = (262,262) # downsample size. 262x262 corresponds to 9- 28x28 cells + 10- 1px borders (doesn't quite match with the rasterizing, but close enough)
 
     # Wrap in try/except to make sure we get `something`
@@ -103,10 +105,18 @@ def submit_image_for_inference(filepath):
     Returns:
         List[List[int]]: the two-dimensional array of integers representing the starting board
     '''
-    raise NotImplementedError('Image submission cannot be implemented until the server is known.')
+    img = Image.open(filepath)
+    puzzle = extract_puzzle(img)
+    img.close()
+    return puzzle
 
 if __name__ == '__main__':
-    file = extract_screenshot('https://sudoku.com/expert/')
+    file = extract_screenshot('https://sudoku.com/easy/')
     updated_file = crop_and_downsample_image(file)
-    #response = submit_image_for_inference(updated_file)
-
+    response = submit_image_for_inference(updated_file)
+    answer = solve_puzzle(response)
+    print_puzzle(response)
+    if answer is not None:
+        print_puzzle(answer)
+    else:
+        print('No solution found')
