@@ -58,6 +58,7 @@ def digit_read(crop_vec):
         #Preprocess image to gray scale, threshold it and invert it
         gray = cv2.cvtColor(crop_cv, cv2.COLOR_BGR2GRAY)
         thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+        #thresh = cv2.threshold(gray, 0, 255,  cv2.THRESH_OTSU)[1]
         digit_config = r'--oem 3 --psm 10 -c tessedit_char_whitelist=123456789'
 
         #Run tesseract OCR to read the digits 
