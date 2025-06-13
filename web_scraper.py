@@ -61,15 +61,15 @@ def extract_screenshot(web_url:str)->str:
     driver.quit()
     return filepath
 
-def sudoku_bot(web_url:str)->str:
+def sudoku_bot(web_url:str)->bool:
     '''
     Opens the site provided in web_url and plays Sudoku.com
 
     Args:
-        web_url (str): the URL of the website to be screenshotted.
+        web_url (str): the URL of the website to be played.
         
     Returns:
-        str: the path to the screenshot
+        bool: True if the sudoku was successfully solved, False otherwise.
     '''
 
     # construct save location (in this directory)
@@ -77,7 +77,6 @@ def sudoku_bot(web_url:str)->str:
 
     # Set up selenium browser
     options = Options()
-    options.headless = True
     options.add_argument("--headless=new")  # more reliable in newer Chrome versions
     options.add_argument("--disable-gpu")   # optional but common
     options.add_argument("--window-size=1280,820")
@@ -186,7 +185,11 @@ def submit_image_for_inference(filepath):
     return puzzle
 
 if __name__ == '__main__':
-    sudoku_bot('https://sudoku.com/easy/')
+    for i in range(30):
+        try:
+            sudoku_bot('https://sudoku.com/easy/')
+        except:
+            print('Failed to solve sudoku')
     '''
     file = extract_screenshot('https://sudoku.com/easy/')
     updated_file = crop_and_downsample_image(file)
