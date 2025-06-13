@@ -8,6 +8,7 @@ import cv2
 import pytesseract
 import numpy as np
 import random
+import csv
 
 
 imgfile = Image.open("tmp_image.png")
@@ -148,3 +149,7 @@ if __name__ == "__main__":
     else:
         print("Unsolvable")
 
+
+    with open('solution.csv','w',newline='') as f:
+      writer = csv.writer(f)
+      writer.writerows(puzzsolve)
